@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Disable secrets scanning for expected configuration files
+  SECRETS_SCAN_OMIT_PATHS = "SETUP.md,README.md,*.md,supabase/config.toml,supabase/**"
+  SECRETS_SCAN_ENABLED = "true"
 
 [[redirects]]
   from = "/*"

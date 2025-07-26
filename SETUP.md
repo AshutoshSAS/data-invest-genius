@@ -8,7 +8,7 @@ Create a `.env` file in the project root with the following variables:
 
 ```env
 # Supabase Configuration
-VITE_SUPABASE_URL=https://vxotncamcnpypxckeupz.supabase.co
+VITE_SUPABASE_URL=your_supabase_project_url_here
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 # AI Services (Optional - for Phase 2)
@@ -32,7 +32,7 @@ VITE_OPENAI_API_KEY=your_openai_api_key_here
 
 3. Link your project:
    ```bash
-   supabase link --project-ref vxotncamcnpypxckeupz
+   supabase link --project-ref your_project_ref_here
    ```
 
 4. Run migrations:
