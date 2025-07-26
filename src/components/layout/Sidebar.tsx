@@ -12,38 +12,51 @@ import {
   Bot,
   Bookmark,
   TrendingUp,
-  Archive
+  Archive,
+  Users,
+  Settings,
+  Building
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { LucideIcon } from "lucide-react";
 
-const navigationItems = [
+interface NavigationItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  badge?: string;
+}
+
+interface NavigationSection {
+  title: string;
+  items: NavigationItem[];
+}
+
+const navigationItems: NavigationSection[] = [
   {
     title: "Overview",
     items: [
-      { title: "Dashboard", url: "/", icon: Home },
-      { title: "Recent Research", url: "/recent", icon: FileText },
-      { title: "Knowledge Base", url: "/knowledge", icon: Database },
+      { title: "Dashboard", url: "/dashboard", icon: Home },
+      { title: "Documents", url: "/documents", icon: FileText },
+      { title: "Projects", url: "/projects", icon: Building },
+      { title: "Analytics", url: "/analytics", icon: BarChart3 },
     ]
   },
   {
     title: "Research Tools",
     items: [
-      { title: "AI Assistant", url: "/chat", icon: MessageSquare, badge: "New" },
+      { title: "AI Chat", url: "/chat", icon: MessageSquare },
       { title: "Upload Documents", url: "/upload", icon: Upload },
-      { title: "Tag Manager", url: "/tags", icon: Tags },
-      { title: "Research Library", url: "/library", icon: FolderOpen },
+      { title: "Teams", url: "/teams", icon: Users },
     ]
   },
   {
-    title: "Analytics",
+    title: "Settings",
     items: [
-      { title: "Insights", url: "/insights", icon: BarChart3 },
-      { title: "Trends", url: "/trends", icon: TrendingUp },
-      { title: "Bookmarks", url: "/bookmarks", icon: Bookmark },
-      { title: "Archive", url: "/archive", icon: Archive },
+      { title: "Profile", url: "/profile", icon: Settings },
     ]
   }
 ];
@@ -58,7 +71,7 @@ export function Sidebar() {
 
   return (
     <div className={cn(
-      "flex flex-col bg-card border-r transition-all duration-300",
+      "hidden md:flex flex-col bg-card border-r transition-all duration-300",
       collapsed ? "w-16" : "w-64"
     )}>
       {/* Toggle Button */}

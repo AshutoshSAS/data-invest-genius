@@ -1,22 +1,23 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Mic, Bot, User, FileText } from "lucide-react";
+import { Send, Paperclip, Mic, Bot, User, FileText, Check, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { RAGSystem, SearchResult } from "@/lib/rag";
+import { useToast } from "@/components/ui/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Message {
   id: string;
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
-  sources?: Array<{
-    title: string;
-    type: "pdf" | "document" | "research";
-    relevance: number;
-  }>;
+  sources?: SearchResult[];
+  error?: boolean;
+  thinking?: boolean;
 }
 
 interface ChatInterfaceProps {
@@ -35,6 +36,7 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -48,6 +50,37 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Format the AI response for better readability
+  const formatAIResponse = (response: string, sources?: SearchResult[]): string => {
+    // Check if response already has citations
+    const hasCitations = /\[\d+\]/.test(response);
+    
+    // If no sources or already has citations, return as is
+    if (!sources || sources.length === 0 || hasCitations) {
+      return response;
+    }
+    
+    // Add section headers if not present
+    let formattedResponse = response;
+    
+    // Check if response is too short or lacks structure
+    if (response.length < 200 || !response.includes('\n\n')) {
+      // Add more structure to short responses
+      formattedResponse = `## Answer\n${response}\n\n`;
+    }
+    
+    // Add sources section if not already present
+    if (!formattedResponse.toLowerCase().includes('source') && sources.length > 0) {
+      formattedResponse += '\n\n## Sources\n';
+      sources.forEach((source, index) => {
+        const relevance = Math.round(source.similarity * 100);
+        formattedResponse += `${index + 1}. **${source.title}** (${relevance}% relevant)\n`;
+      });
+    }
+    
+    return formattedResponse;
+  };
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -63,26 +96,131 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
     setInput("");
     setIsLoading(true);
 
+    // Add thinking message
+    const thinkingId = (Date.now() + 1).toString();
+    setMessages(prev => [...prev, {
+      id: thinkingId,
+      content: "Analyzing your research documents...",
+      role: "assistant",
+      timestamp: new Date(),
+      thinking: true
+    }]);
+
     try {
-      // Simulate AI response (replace with actual Gemini API call)
-      setTimeout(() => {
+      // Use RAG system for real AI response
+      if (geminiApiKey) {
+        try {
+          const ragSystem = RAGSystem.getInstance(geminiApiKey);
+          const context = await ragSystem.getRAGContext(input);
+          
+          // Remove thinking message
+          setMessages(prev => prev.filter(m => m.id !== thinkingId));
+          
+          if (context.relevantDocuments.length === 0) {
+            // No relevant documents found
+            const noResultsMessage: Message = {
+              id: (Date.now() + 2).toString(),
+              content: "I couldn't find any relevant information in your research documents about that topic. Would you like to try a different query or upload more documents related to this subject?",
+              role: "assistant",
+              timestamp: new Date(),
+              sources: []
+            };
+            setMessages(prev => [...prev, noResultsMessage]);
+            setIsLoading(false);
+            return;
+          }
+          
+          const response = await ragSystem.generateResponse(input, context);
+          const formattedResponse = formatAIResponse(response, context.relevantDocuments);
+          
+          const assistantMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            content: formattedResponse,
+            role: "assistant",
+            timestamp: new Date(),
+            sources: context.relevantDocuments
+          };
+          setMessages(prev => [...prev, assistantMessage]);
+          
+        } catch (error) {
+          console.error("Error generating AI response:", error);
+          
+          // Remove thinking message
+          setMessages(prev => prev.filter(m => m.id !== thinkingId));
+          
+          const errorMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            content: "I apologize, but I'm having trouble processing your request right now. This might be due to a connection issue or because I'm still learning about your research documents. Please try again or rephrase your question.",
+            role: "assistant",
+            timestamp: new Date(),
+            error: true
+          };
+          setMessages(prev => [...prev, errorMessage]);
+          
+          toast({
+            title: "AI Response Error",
+            description: "There was a problem generating a response. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // Remove thinking message
+        setMessages(prev => prev.filter(m => m.id !== thinkingId));
+        
+        // Fallback for demo mode
+        const demoSources = [
+          { id: "1", title: "Investment Analysis Q3 2024", content: "Sample content about investment trends and market analysis for the third quarter.", similarity: 0.95, document_id: "1", chunk_index: 0 },
+          { id: "2", title: "Market Research Report", content: "Comprehensive analysis of market conditions and future projections.", similarity: 0.87, document_id: "2", chunk_index: 0 },
+          { id: "3", title: "Term Sheet Analysis", content: "Detailed breakdown of investment terms and conditions.", similarity: 0.82, document_id: "3", chunk_index: 0 },
+        ];
+        
+        const demoResponse = `## Analysis
+
+Based on your query about "${input}", I've analyzed the relevant documents in your research database.
+
+The Investment Analysis Q3 2024 report indicates significant trends in this area, with market projections showing potential growth in the coming months. According to the Market Research Report, there are several key factors to consider:
+
+1. Market conditions remain favorable for strategic investments
+2. Sector performance varies with technology and healthcare showing strongest indicators
+3. Risk factors include regulatory changes expected in Q4
+
+## Recommendation
+
+Consider reviewing the Term Sheet Analysis for specific investment parameters that align with these findings.
+
+`;
+        
         const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: `I understand you're asking about "${input}". Based on your research database, I found several relevant insights. This would be connected to your actual research data through RAG implementation.`,
+          id: (Date.now() + 2).toString(),
+          content: demoResponse,
           role: "assistant",
           timestamp: new Date(),
-          sources: [
-            { title: "Investment Analysis Q3 2024", type: "pdf", relevance: 0.95 },
-            { title: "Market Research Report", type: "document", relevance: 0.87 },
-            { title: "Term Sheet Analysis", type: "research", relevance: 0.82 },
-          ]
+          sources: demoSources
         };
         setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+      }
+      setIsLoading(false);
     } catch (error) {
+      // Remove thinking message
+      setMessages(prev => prev.filter(m => m.id !== thinkingId));
+      
       setIsLoading(false);
       console.error("Error sending message:", error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        content: "I apologize, but I encountered an unexpected error. Please try again later.",
+        role: "assistant",
+        timestamp: new Date(),
+        error: true
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -91,6 +229,35 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // Function to render message content with proper formatting
+  const renderMessageContent = (content: string) => {
+    // Split content by section headers
+    const sections = content.split(/^##\s+/m).filter(Boolean);
+    
+    if (sections.length <= 1) {
+      // No section headers, render as plain text with paragraph breaks
+      return content.split('\n\n').map((paragraph, i) => (
+        <p key={i} className={`${i > 0 ? 'mt-2' : ''}`}>{paragraph}</p>
+      ));
+    }
+    
+    // Render with section headers
+    return sections.map((section, idx) => {
+      const lines = section.split('\n');
+      const title = idx > 0 ? lines[0] : null;
+      const content = idx > 0 ? lines.slice(1).join('\n') : section;
+      
+      return (
+        <div key={idx} className={`${idx > 0 ? 'mt-4' : ''}`}>
+          {title && <h3 className="text-sm font-semibold mb-2">{title}</h3>}
+          {content.split('\n\n').map((paragraph, i) => (
+            <p key={i} className={`${i > 0 ? 'mt-2' : ''} text-sm`}>{paragraph}</p>
+          ))}
+        </div>
+      );
+    });
   };
 
   return (
@@ -139,27 +306,69 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
                   "p-3 transition-smooth",
                   message.role === "user" 
                     ? "bg-primary text-primary-foreground ml-auto" 
-                    : "bg-muted"
+                    : message.error 
+                      ? "bg-destructive/10 border-destructive/20" 
+                      : message.thinking
+                        ? "bg-muted/50 border-dashed"
+                        : "bg-muted"
                 )}>
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  {message.thinking ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" />
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100" />
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">{message.content}</span>
+                    </div>
+                  ) : (
+                    <div className="text-sm leading-relaxed">
+                      {renderMessageContent(message.content)}
+                    </div>
+                  )}
                 </Card>
 
-                {message.sources && (
+                {message.sources && message.sources.length > 0 && (
                   <div className="space-y-2 max-w-full">
-                    <p className="text-xs text-muted-foreground">Sources:</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <FileText className="h-3 w-3" />
+                      <span>Sources ({message.sources.length}):</span>
+                    </div>
                     <div className="grid gap-2">
                       {message.sources.map((source, index) => (
-                        <Card key={index} className="p-2 bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
-                          <div className="flex items-center gap-2 text-xs">
-                            <FileText className="h-3 w-3 text-accent-foreground" />
-                            <span className="flex-1 font-medium">{source.title}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {Math.round(source.relevance * 100)}%
-                            </Badge>
-                          </div>
-                        </Card>
+                        <TooltipProvider key={index}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Card className="p-2 bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
+                                <div className="flex items-center justify-between gap-2 text-xs">
+                                  <div className="flex items-center gap-2 overflow-hidden">
+                                    <FileText className="h-3 w-3 text-accent-foreground flex-shrink-0" />
+                                    <span className="font-medium truncate">{source.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {Math.round(source.similarity * 100)}%
+                                    </Badge>
+                                    <ExternalLink className="h-3 w-3" />
+                                  </div>
+                                </div>
+                              </Card>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-medium">{source.title}</p>
+                              <p className="text-xs mt-1 max-w-xs">{source.content.substring(0, 100)}...</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {message.error && (
+                  <div className="flex items-center gap-1 text-xs text-destructive">
+                    <AlertTriangle className="h-3 w-3" />
+                    <span>Error processing request</span>
                   </div>
                 )}
 
@@ -176,7 +385,7 @@ export function ChatInterface({ geminiApiKey }: ChatInterfaceProps) {
             </div>
           ))}
 
-          {isLoading && (
+          {isLoading && !messages.some(m => m.thinking) && (
             <div className="flex gap-3 animate-fade-in">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                 <Bot className="h-4 w-4 text-primary-foreground" />

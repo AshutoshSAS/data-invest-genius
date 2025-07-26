@@ -1,98 +1,100 @@
-import { FileUpload } from "@/components/upload/FileUpload";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Zap, Shield, Database } from "lucide-react";
+import { DocumentUpload } from '@/components/upload/DocumentUpload';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, Brain, BarChart3, MessageSquare } from 'lucide-react';
 
-export default function Upload() {
-  const features = [
-    {
-      icon: Zap,
-      title: "AI Processing",
-      description: "Automatic text extraction, summarization, and intelligent tagging"
-    },
-    {
-      icon: Shield,
-      title: "Secure Storage", 
-      description: "Enterprise-grade security with end-to-end encryption"
-    },
-    {
-      icon: Database,
-      title: "RAG Integration",
-      description: "Documents are indexed for intelligent retrieval and analysis"
-    },
-    {
-      icon: FileText,
-      title: "Format Support",
-      description: "PDF, DOC, DOCX, TXT, CSV and more supported formats"
-    }
-  ];
-
+const Upload = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Upload Research Documents</h1>
-        <p className="text-muted-foreground mt-2">
-          Upload your research files for AI-powered analysis and intelligent search. 
-          Documents are automatically processed and integrated into your knowledge base.
-        </p>
-      </div>
-
-      {/* Features Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {features.map((feature) => (
-          <Card key={feature.title} className="p-4 text-center shadow-research">
-            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center mx-auto mb-3">
-              <feature.icon className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <h3 className="font-semibold mb-2">{feature.title}</h3>
-            <p className="text-sm text-muted-foreground">{feature.description}</p>
-          </Card>
-        ))}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Upload Documents</h1>
+          <p className="text-gray-600 mt-2">
+            Upload your research documents for AI-powered analysis and insights
+          </p>
+        </div>
       </div>
 
       {/* Upload Component */}
-      <FileUpload />
+      <DocumentUpload />
 
-      {/* Processing Information */}
-      <Card className="p-6 bg-primary-light border-primary/20">
-        <h3 className="text-lg font-semibold mb-3 text-primary">How Document Processing Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">
-              1
+      {/* Features Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <Brain className="h-6 w-6 text-blue-600" />
             </div>
-            <div>
-              <h4 className="font-medium text-primary mb-1">Upload & Extract</h4>
-              <p className="text-primary/80">
-                Files are uploaded securely and text content is extracted using advanced OCR and parsing
-              </p>
+            <CardTitle className="text-lg">AI Analysis</CardTitle>
+            <CardDescription>
+              Get instant AI-powered summaries, key insights, and analysis of your documents
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <BarChart3 className="h-6 w-6 text-green-600" />
+            </div>
+            <CardTitle className="text-lg">Smart Categorization</CardTitle>
+            <CardDescription>
+              Documents are automatically categorized and tagged for easy organization
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <MessageSquare className="h-6 w-6 text-purple-600" />
+            </div>
+            <CardTitle className="text-lg">RAG Chat</CardTitle>
+            <CardDescription>
+              Ask questions about your documents and get contextual answers with sources
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Supported Formats */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Supported File Formats
+          </CardTitle>
+          <CardDescription>
+            We support a wide range of document formats for comprehensive analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl mb-2">📄</div>
+              <div className="font-medium">PDF</div>
+              <div className="text-sm text-gray-500">Research Papers</div>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl mb-2">📝</div>
+              <div className="font-medium">Word</div>
+              <div className="text-sm text-gray-500">DOC, DOCX</div>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl mb-2">📊</div>
+              <div className="font-medium">Excel</div>
+              <div className="text-sm text-gray-500">XLS, XLSX, CSV</div>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl mb-2">📄</div>
+              <div className="font-medium">Text</div>
+              <div className="text-sm text-gray-500">TXT Files</div>
             </div>
           </div>
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">
-              2
-            </div>
-            <div>
-              <h4 className="font-medium text-primary mb-1">AI Analysis</h4>
-              <p className="text-primary/80">
-                Gemini AI analyzes content for key topics, entities, and generates intelligent summaries
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">
-              3
-            </div>
-            <div>
-              <h4 className="font-medium text-primary mb-1">RAG Integration</h4>
-              <p className="text-primary/80">
-                Content is vectorized and indexed for intelligent retrieval during AI conversations
-              </p>
-            </div>
-          </div>
-        </div>
+        </CardContent>
       </Card>
     </div>
   );
-}
+};
+
+export default Upload;

@@ -176,6 +176,90 @@
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
+  
+  /* Responsive utilities */
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row gap-4;
+  }
+  
+  /* Mobile-first responsive text */
+  .text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+  
+  .heading-responsive {
+    @apply text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold;
+  }
+  
+  /* Responsive spacing */
+  .space-responsive {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+  
+  /* Responsive padding */
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  /* Responsive margins */
+  .m-responsive {
+    @apply m-4 sm:m-6 lg:m-8;
+  }
+  
+  /* Hide/show elements based on screen size */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+  
+  .tablet-only {
+    @apply hidden md:block lg:hidden;
+  }
+  
+  /* Responsive card layouts */
+  .card-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  /* Responsive button groups */
+  .button-group-responsive {
+    @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+  }
+  
+  /* Responsive form layouts */
+  .form-responsive {
+    @apply space-y-4 sm:space-y-6;
+  }
+  
+  .form-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(to right, rgba(var(--foreground-rgb), 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(var(--foreground-rgb), 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
 }
 
 @keyframes slideUp {

@@ -1,27 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatInterface } from "@/components/chat/ChatInterface";
+import { ResearchSummary } from "@/components/research/ResearchSummary";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Bot, Key, AlertCircle, CheckCircle, Settings } from "lucide-react";
+import { Bot, CheckCircle, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Chat() {
-  const [geminiApiKey, setGeminiApiKey] = useState("");
+  // Disable AI chat feature - Coming Soon
+  const isComingSoon = true;
   const [isKeyValid, setIsKeyValid] = useState(false);
-  const [showSettings, setShowSettings] = useState(!geminiApiKey);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleApiKeySubmit = () => {
-    if (geminiApiKey.startsWith("AIza") && geminiApiKey.length > 30) {
-      setIsKeyValid(true);
-      setShowSettings(false);
-      // Here you would typically validate the key with a test API call
-    } else {
-      setIsKeyValid(false);
+  // Check if Gemini API key is available in environment
+  useEffect(() => {
+    if (isComingSoon) {
+      setIsLoading(false);
+      return;
     }
-  };
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    console.log('API Key check:', {
+      hasKey: !!apiKey,
+      keyLength: apiKey?.length,
+      startsWithAIza: apiKey?.startsWith('AIza'),
+      keyPreview: apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined'
+    });
+    setIsKeyValid(!!apiKey && apiKey.startsWith('AIza'));
+    setIsLoading(false);
+  }, [isComingSoon]);
 
   const suggestedQueries = [
     "Summarize the latest investment reports from Q4 2024",
@@ -32,129 +40,153 @@ export default function Chat() {
     "Generate a summary of due diligence findings for recent deals"
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
+  if (isComingSoon) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">AI Research Assistant</h1>
           <p className="text-muted-foreground mt-2">
-            Chat with your research database using advanced AI. Get insights, summaries, and intelligent analysis.
+            Advanced AI-powered research assistant for your documents and data.
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowSettings(!showSettings)}
-          className="gap-2"
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </Button>
-      </div>
 
-      {/* API Key Configuration */}
-      {showSettings && (
-        <Card className="p-6 border-primary/20 bg-primary-light">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <Key className="h-4 w-4 text-primary-foreground" />
+        {/* Coming Soon Message */}
+        <Card className="p-12 text-center shadow-lg">
+          <div className="flex justify-center mb-6">
+            <div className="p-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full">
+              <Bot className="h-16 w-16 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-primary">Gemini API Configuration</h3>
           </div>
           
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            AI Chat Assistant Coming Soon!
+          </h2>
+          
+          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+            We're working hard to bring you an advanced AI-powered research assistant that will help you 
+            analyze documents, generate insights, and answer complex questions about your research data.
+          </p>
+          
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="apikey" className="text-primary">Gemini API Key</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="apikey"
-                  type="password"
-                  value={geminiApiKey}
-                  onChange={(e) => setGeminiApiKey(e.target.value)}
-                  placeholder="Enter your Gemini API key (AIza...)"
-                  className="flex-1"
-                />
-                <Button onClick={handleApiKeySubmit} className="gradient-primary">
-                  Connect
-                </Button>
-              </div>
-            </div>
-
-            {geminiApiKey && (
-              <Alert className={isKeyValid ? "border-success bg-success/5" : "border-destructive bg-destructive/5"}>
-                <div className="flex items-center gap-2">
-                  {isKeyValid ? (
-                    <CheckCircle className="h-4 w-4 text-success" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                  <AlertDescription className={isKeyValid ? "text-success" : "text-destructive"}>
-                    {isKeyValid 
-                      ? "API key connected successfully! You can now use the full AI capabilities."
-                      : "Invalid API key format. Please check your Gemini API key."
-                    }
-                  </AlertDescription>
-                </div>
-              </Alert>
-            )}
-
-            <div className="text-sm text-primary/80">
-              <p className="mb-2">To get your Gemini API key:</p>
-              <ol className="list-decimal list-inside space-y-1 ml-4">
-                <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Google AI Studio</a></li>
-                <li>Sign in with your Google account</li>
-                <li>Create a new API key for your project</li>
-                <li>Copy and paste the key above</li>
-              </ol>
-            </div>
+            <Badge variant="secondary" className="text-lg px-4 py-2">
+              🚀 Advanced RAG Technology
+            </Badge>
+            <Badge variant="secondary" className="text-lg px-4 py-2">
+              🧠 Multi-Document Analysis
+            </Badge>
+            <Badge variant="secondary" className="text-lg px-4 py-2">
+              📊 Intelligent Insights
+            </Badge>
           </div>
+          
+          <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-3">What to expect:</h3>
+            <ul className="text-left text-gray-600 space-y-2 max-w-md mx-auto">
+              <li>• Chat with your uploaded documents</li>
+              <li>• Generate research summaries</li>
+              <li>• Extract key insights automatically</li>
+              <li>• Compare multiple documents</li>
+              <li>• Export AI-generated reports</li>
+            </ul>
+          </div>
+          
+          <p className="text-sm text-gray-500 mt-6">
+            Stay tuned for updates! This feature will be available in the next release.
+          </p>
         </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">AI Research Assistant</h1>
+        <p className="text-muted-foreground mt-2">
+          Chat with your research database using advanced AI. Get insights, summaries, and intelligent analysis.
+        </p>
+      </div>
+
+      {/* API Key Status */}
+      {!isLoading && (
+        <Alert className={isKeyValid ? "border-success bg-success/5" : "border-destructive bg-destructive/5"}>
+          <div className="flex items-center gap-2">
+            {isKeyValid ? (
+              <CheckCircle className="h-4 w-4 text-success" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-destructive" />
+            )}
+            <AlertDescription className={isKeyValid ? "text-success" : "text-destructive"}>
+              {isKeyValid 
+                ? "Gemini API key configured successfully! Full AI capabilities are available."
+                : "Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file."
+              }
+            </AlertDescription>
+          </div>
+        </Alert>
       )}
 
       {/* Status Badge */}
-      <div className="flex items-center gap-3">
-        <Badge variant={isKeyValid ? "default" : "secondary"} className="gap-2">
-          <Bot className="h-3 w-3" />
-          {isKeyValid ? "AI Assistant Connected" : "Demo Mode"}
-        </Badge>
-        {!isKeyValid && (
-          <p className="text-sm text-muted-foreground">
-            Connect your Gemini API key to enable full RAG capabilities
-          </p>
-        )}
-      </div>
+      {!isLoading && (
+        <div className="flex items-center gap-3">
+          <Badge variant={isKeyValid ? "default" : "secondary"} className="gap-2">
+            <Bot className="h-3 w-3" />
+            {isKeyValid ? "AI Assistant Ready" : "API Key Required"}
+          </Badge>
+          {!isKeyValid && (
+            <p className="text-sm text-muted-foreground">
+              Add VITE_GEMINI_API_KEY to your .env file to enable AI chat capabilities
+            </p>
+          )}
+        </div>
+      )}
 
-      {/* Main Chat Interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Suggested Queries */}
-        <div className="lg:col-span-1">
-          <Card className="p-4 shadow-research h-fit">
-            <h3 className="font-semibold mb-3">Suggested Queries</h3>
-            <div className="space-y-2">
-              {suggestedQueries.map((query, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  className="w-full text-left text-sm h-auto p-3 justify-start whitespace-normal"
-                  onClick={() => {
-                    // This would trigger the query in the chat interface
-                    console.log("Suggested query:", query);
-                  }}
-                >
-                  {query}
-                </Button>
-              ))}
+      {/* Main Interface with Tabs */}
+      <Tabs defaultValue="chat" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="chat">AI Chat Assistant</TabsTrigger>
+          <TabsTrigger value="summary">Research Summaries</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="chat" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Suggested Queries */}
+            <div className="lg:col-span-1">
+              <Card className="p-4 shadow-research h-fit">
+                <h3 className="font-semibold mb-3">Suggested Queries</h3>
+                <div className="space-y-2">
+                  {suggestedQueries.map((query, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="w-full text-left text-sm h-auto p-3 justify-start whitespace-normal"
+                      onClick={() => {
+                        // This would trigger the query in the chat interface
+                        console.log("Suggested query:", query);
+                      }}
+                    >
+                      {query}
+                    </Button>
+                  ))}
+                </div>
+              </Card>
             </div>
-          </Card>
-        </div>
 
-        {/* Chat Interface */}
-        <div className="lg:col-span-3">
-          <div className="h-[700px]">
-            <ChatInterface geminiApiKey={isKeyValid ? geminiApiKey : undefined} />
+            {/* Chat Interface */}
+            <div className="lg:col-span-3">
+              <div className="h-[700px]">
+                <ChatInterface geminiApiKey={isKeyValid ? import.meta.env.VITE_GEMINI_API_KEY : undefined} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="summary" className="mt-6">
+          <ResearchSummary geminiApiKey={isKeyValid ? import.meta.env.VITE_GEMINI_API_KEY : undefined} />
+        </TabsContent>
+      </Tabs>
 
       {/* Capabilities Overview */}
       <Card className="p-6 shadow-research">
