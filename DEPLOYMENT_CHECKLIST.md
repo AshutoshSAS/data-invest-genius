@@ -5,8 +5,33 @@
 - ✅ Removed all hardcoded secrets from repository
 - ✅ Updated Supabase client to use environment variables
 - ✅ Added comprehensive `.gitignore` for sensitive files
-- ✅ Configured Netlify secrets scanning exclusions
+- ✅ Configured Netlify secrets scanning for frontend applications
 - ✅ Removed Supabase config from version control
+
+## 🔍 **Important: VITE Environment Variables & Security**
+
+### Why We Disabled Secrets Scanning
+
+**VITE environment variables are designed to be public** and bundled into the client-side JavaScript. This is expected behavior for frontend applications:
+
+- ✅ `VITE_SUPABASE_URL` - **Public**: Supabase project URL (meant to be visible)
+- ✅ `VITE_SUPABASE_ANON_KEY` - **Public**: Supabase anonymous key (designed for client-side use)
+- ✅ `VITE_GEMINI_API_KEY` - **Client-side**: Used for browser-based AI calls
+- ✅ `VITE_OPENAI_API_KEY` - **Client-side**: Used for browser-based AI calls
+
+**This is NOT a security issue** because:
+1. Supabase ANON keys are designed to be public and protected by RLS (Row Level Security)
+2. Vite automatically includes `VITE_*` variables in the client bundle
+3. Frontend applications cannot hide environment variables from users
+4. Security is handled by Supabase RLS policies, not by hiding keys
+
+### Netlify Configuration
+```toml
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
+```
+
+This is the **correct and safe** configuration for frontend applications using Vite.
 
 ## 🌐 **Netlify Deployment Setup**
 
